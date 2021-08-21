@@ -11,7 +11,7 @@ import ru.netology.nmedia.dto.Post
 import java.util.concurrent.TimeUnit
 
 
-class PostRepositoryImpl: PostRepository {
+class PostRepositoryImpl : PostRepository {
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .build()
@@ -19,7 +19,7 @@ class PostRepositoryImpl: PostRepository {
     private val typeToken = object : TypeToken<List<Post>>() {}
 
     companion object {
-        private const val BASE_URL = "http://10.0.2.2:9999"
+        private const val BASE_URL = "http://192.168.0.103:9999"
         private val jsonType = "application/json".toMediaType()
     }
 
@@ -47,7 +47,7 @@ class PostRepositoryImpl: PostRepository {
             .close()
     }
 
-    override fun removeLikeById(id: Long) {
+    override fun unlikeById(id: Long) {
         val request: Request = Request.Builder()
             .url("${BASE_URL}/api/slow/posts/$id/likes")
             .delete()

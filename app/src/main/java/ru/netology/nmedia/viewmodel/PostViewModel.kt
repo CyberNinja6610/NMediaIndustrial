@@ -92,15 +92,13 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             )
             try {
                 if (oldPost?.likedByMe == true) {
-                    repository.removeLikeById(id)
+                    repository.unlikeById(id)
                 } else if (oldPost?.likedByMe == false) {
                     repository.likeById(id)
                 }
             } catch (e: IOException) {
                 _data.postValue(_data.value?.copy(posts = old))
             }
-
-            repository.likeById(id)
         }
     }
 
