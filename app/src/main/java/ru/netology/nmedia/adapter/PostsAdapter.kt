@@ -1,13 +1,20 @@
 package ru.netology.nmedia.adapter
 
+import android.util.Log
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.PopupMenu
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.MultiTransformation
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.load.resource.bitmap.FitCenter
 import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.CardPostBinding
+import ru.netology.nmedia.dto.AttachmentType
 import ru.netology.nmedia.dto.Post
 
 interface OnInteractionListener {
@@ -41,7 +48,46 @@ class PostViewHolder(
             author.text = post.author
             published.text = post.published
             content.text = post.content
-            // в адаптере
+
+            if (post.authorAvatar.isNotBlank()) {
+                Glide.with(binding.avatar)
+                    .load(
+                        if (post.authorAvatar.isBlank()) null else {
+                            "http://10.0.2.2:9999/avatars/${post.authorAvatar}"
+                        }
+                    )
+                    .transform(
+                        MultiTransformation(FitCenter(), CircleCrop())
+                    )
+                    .placeholder(R.drawable.ic_loading_100dp)
+                    .error(R.drawable.ic_error_100dp)
+                    .timeout(10_000)
+                    .into(binding.avatar)
+            }
+
+            post.attachment?.let {
+                try {
+                    when (AttachmentType.valueOf(it.type)) {
+                        AttachmentType.IMAGE -> {
+                            binding.attachmentImage.visibility = View.VISIBLE
+                            binding.attachmentImage.contentDescription = it.description
+                            Glide.with(binding.attachmentImage)
+                                .load(
+                                    if (it.url.isBlank()) null else {
+                                        "http://10.0.2.2:9999/images/${it.url}"
+                                    }
+                                )
+                                .placeholder(R.drawable.placeholder)
+                                .error(R.drawable.placeholder)
+                                .timeout(10_000)
+                                .into(binding.attachmentImage)
+                        }
+                    }
+                } catch (e: IllegalArgumentException) {
+                    Log.e("PostAdapter", "unknown attachment type: ${it.type}")
+                }
+            }
+
             like.isChecked = post.likedByMe
             like.text = "${post.likes}"
 
