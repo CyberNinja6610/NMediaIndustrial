@@ -7,6 +7,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import ru.netology.nmedia.R
 import ru.netology.nmedia.databinding.FragmentNewPostBinding
 import ru.netology.nmedia.util.AndroidUtils
 import ru.netology.nmedia.util.StringArg
@@ -44,6 +46,22 @@ class NewPostFragment : Fragment() {
         viewModel.postCreated.observe(viewLifecycleOwner) {
             viewModel.loadPosts()
             findNavController().navigateUp()
+        }
+
+        viewModel.retrySave.observe(viewLifecycleOwner) {
+            it?.let {
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setTitle(getString(R.string.error_title))
+                    .setMessage(getString(R.string.request_failure))
+                    .setNegativeButton(getString(R.string.cancel_title)) { dialog, which ->
+                        dialog.cancel()
+                    }
+                    .setPositiveButton(getString(R.string.retry_title)) { dialog, which ->
+                        viewModel.edit(it)
+                        viewModel.save()
+                    }
+                    .show()
+            }
         }
         return binding.root
     }
