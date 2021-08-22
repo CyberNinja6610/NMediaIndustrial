@@ -1,5 +1,6 @@
 package ru.netology.nmedia.repository
 
+import retrofit2.Call
 import ru.netology.nmedia.dto.Post
 
 interface PostRepository {
@@ -17,26 +18,27 @@ interface PostRepository {
 
     interface GetAllCallback {
         fun onSuccess(posts: List<Post>) {}
-        fun onError(e: Exception) {}
+        fun onError(e: Throwable) {}
     }
 
     interface SaveCallback {
         fun onSuccess() {}
-        fun onError(e: Exception) {}
+        fun onError(e: Throwable) {}
     }
 
     interface LikeByIdCallback {
         fun onSuccess() {}
-        fun onError(e: Exception) {}
+        fun onError(e: Throwable) {}
     }
 
     interface UnlikeByIdCallback {
         fun onSuccess() {}
-        fun onError(e: Exception) {}
+        fun onError(e: Throwable) {}
     }
 
     interface RemoveByIdCallback {
         fun onSuccess() {}
-        fun onError(e: Exception) {}
+        fun onError(e: Throwable) {}
     }
+
 }

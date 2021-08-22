@@ -9,6 +9,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ru.netology.nmedia.R
 import ru.netology.nmedia.adapter.OnInteractionListener
 import ru.netology.nmedia.adapter.PostsAdapter
@@ -71,6 +72,36 @@ class FeedFragment : Fragment() {
 
         binding.listRefresh.setOnRefreshListener {
             viewModel.loadPosts()
+        }
+
+        viewModel.retryLikeById.observe(viewLifecycleOwner) {
+            it?.let {
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setTitle(getString(R.string.error_title))
+                    .setMessage(getString(R.string.request_failure))
+                    .setNegativeButton(getString(R.string.cancel_title)) { dialog, which ->
+                        dialog.cancel()
+                    }
+                    .setPositiveButton(getString(R.string.retry_title)) { dialog, which ->
+                        viewModel.likeById(it)
+                    }
+                    .show()
+            }
+        }
+
+        viewModel.retryRemoveById.observe(viewLifecycleOwner) {
+            it?.let {
+                MaterialAlertDialogBuilder(requireActivity())
+                    .setTitle(getString(R.string.error_title))
+                    .setMessage(getString(R.string.request_failure))
+                    .setNegativeButton(getString(R.string.cancel_title)) { dialog, which ->
+                        dialog.cancel()
+                    }
+                    .setPositiveButton(getString(R.string.retry_title)) { dialog, which ->
+                        viewModel.removeById(it)
+                    }
+                    .show()
+            }
         }
 
         return binding.root

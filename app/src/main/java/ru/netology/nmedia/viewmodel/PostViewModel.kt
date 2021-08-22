@@ -2,6 +2,8 @@ package ru.netology.nmedia.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.*
+import retrofit2.Call
+import retrofit2.Callback
 import ru.netology.nmedia.dto.Post
 import ru.netology.nmedia.model.FeedModel
 import ru.netology.nmedia.repository.*
@@ -32,6 +34,19 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
     val postCreated: LiveData<Unit>
         get() = _postCreated
 
+    private val _retryLikeById = SingleLiveEvent<Long>()
+    val retryLikeById: LiveData<Long>
+        get() = _retryLikeById
+
+    private val _retrySave = SingleLiveEvent<Post>()
+    val retrySave: LiveData<Post>
+        get() = _retrySave
+
+    private val _retryRemoveById = SingleLiveEvent<Long>()
+    val retryRemoveById: LiveData<Long>
+        get() = _retryRemoveById
+
+
     init {
         loadPosts()
     }
@@ -44,11 +59,12 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 _data.postValue(FeedModel(posts = posts, empty = posts.isEmpty()))
             }
 
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
                 _data.postValue(FeedModel(error = true))
             }
         })
     }
+
 
     fun save() {
         edited.value?.let {
@@ -56,8 +72,8 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
                 override fun onSuccess() {
                     _postCreated.postValue(Unit)
                 }
-                override fun onError(e: Exception) {
-                    _postCreated.postValue(Unit)
+                override fun onError(e: Throwable) {
+                    _retrySave.postValue(it)
                 }
             })
         }
@@ -96,14 +112,15 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
         )
         if (oldPost?.likedByMe == true) {
             repository.unlikeByIdAsync(id, object : UnlikeByIdCallback {
-                override fun onError(e: Exception) {
+                override fun onError(e: Throwable) {
                     _data.postValue(_data.value?.copy(posts = old))
                 }
             })
         } else if (oldPost?.likedByMe == false) {
             repository.likeByIdAsync(id, object : LikeByIdCallback {
-                override fun onError(e: Exception) {
+                override fun onError(e: Throwable) {
                     _data.postValue(_data.value?.copy(posts = old))
+                    _retryLikeById.postValue(id)
                 }
             })
         }
@@ -119,9 +136,11 @@ class PostViewModel(application: Application) : AndroidViewModel(application) {
             )
         )
         repository.removeByIdAsync(id, object : RemoveByIdCallback {
-            override fun onError(e: Exception) {
+            override fun onError(e: Throwable) {
                 _data.postValue(_data.value?.copy(posts = old))
+                _retryRemoveById.postValue(id)
             }
         })
     }
+
 }
